@@ -221,7 +221,7 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
                         meta: { ...meta, isRequired: true },
                         options,
                     })
-                })${readonly}`
+                })${getZodChain({ schema: schema, meta: meta, options })}${readonly}`
             );
         }
 
@@ -278,7 +278,7 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
                 const propCode =
                     getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options }) +
-                    getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options });
+                    (propActualSchema?.type === "array" ? "" : getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options }));
 
                 return [prop, propCode.toString()];
             });
@@ -459,5 +459,10 @@ const getZodChainableArrayValidations = (schema: SchemaObject) => {
         validations.push(`max(${schema.maxItems})`);
     }
 
-    return validations.join(".");
+
+    // uniqueItems validation must come LAST because .refine() returns ZodEffects
+    // which does not support further chaining of .min(), .max(), etc.
+    if (schema.uniqueItems === true) {
+        validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: "Items must be unique" })`);
+    }    return validations.join(".");
 };
