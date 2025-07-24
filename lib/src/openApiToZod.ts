@@ -303,17 +303,13 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
 type ZodChainArgs = { schema: SchemaObject; meta?: CodeMetaData; options?: TemplateContext["options"] };
 
-
-
 export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
     const chains: string[] = [];
 
     match(schema.type)
         .with("string", () => chains.push(getZodChainableStringValidations(schema)))
         .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
-        // Array validations are handled directly in array processing to avoid duplication
-        .with("array", () => void 0)
-        .otherwise(() => void 0);
+        .otherwise(() => void 0); // Arrays and other types handled elsewhere
 
     if (typeof schema.description === "string" && schema.description !== "" && options?.withDescription) {
         if (["\n", "\r", "\r\n"].some((c) => String.prototype.includes.call(schema.description, c))) {
