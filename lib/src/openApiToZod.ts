@@ -95,8 +95,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
             return code.assign(`
                 z.discriminatedUnion("${propertyName}", [${schema.oneOf
-                .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
-                .join(", ")}])
+                    .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
+                    .join(", ")}])
             `);
         }
 
@@ -212,16 +212,17 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
     if (schemaType === "array") {
         if (schema.items) {
+            const arrayValidations = getZodChainableArrayValidations(schema);
+            const arrayChain = arrayValidations ? `.${arrayValidations}` : '';
+
             return code.assign(
-                `z.array(${
-                    getZodSchema({ schema: schema.items, ctx, meta, options }).toString()
-                }${
-                    getZodChain({
-                        schema: schema.items as SchemaObject,
-                        meta: { ...meta, isRequired: true },
-                        options,
-                    })
-                })${getZodChain({ schema: schema, meta: meta, options })}${readonly}`
+                `z.array(${getZodSchema({ schema: schema.items, ctx, meta, options }).toString()
+                }${getZodChain({
+                    schema: schema.items as SchemaObject,
+                    meta: { ...meta, isRequired: true },
+                    options,
+                })
+                })${arrayChain}${readonly}`
             );
         }
 
@@ -262,8 +263,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
                     isRequired: isPartial
                         ? true
                         : hasRequiredArray
-                        ? schema.required?.includes(prop)
-                        : options?.withImplicitRequiredProps,
+                            ? schema.required?.includes(prop)
+                            : options?.withImplicitRequiredProps,
                     name: prop,
                 } as CodeMetaData;
 
@@ -278,7 +279,7 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
                 const propCode =
                     getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options }) +
-                    (propActualSchema?.type === "array" ? "" : getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options }));
+                    getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options });
 
                 return [prop, propCode.toString()];
             });
@@ -302,13 +303,16 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
 type ZodChainArgs = { schema: SchemaObject; meta?: CodeMetaData; options?: TemplateContext["options"] };
 
+
+
 export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
     const chains: string[] = [];
 
     match(schema.type)
         .with("string", () => chains.push(getZodChainableStringValidations(schema)))
         .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
-        .with("array", () => chains.push(getZodChainableArrayValidations(schema)))
+        // Array validations are handled directly in array processing to avoid duplication
+        .with("array", () => void 0)
         .otherwise(() => void 0);
 
     if (typeof schema.description === "string" && schema.description !== "" && options?.withDescription) {
@@ -464,5 +468,5 @@ const getZodChainableArrayValidations = (schema: SchemaObject) => {
     // which does not support further chaining of .min(), .max(), etc.
     if (schema.uniqueItems === true) {
         validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: "Items must be unique" })`);
-    }    return validations.join(".");
+    } return validations.join(".");
 };
