@@ -462,5 +462,6 @@ const getZodChainableArrayValidations = (schema: SchemaObject) => {
 
     if (schema.uniqueItems === true) {
         validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: "Items must be unique" })`);
-    } return validations.join(".");
+    }
+    return validations.join(".");
 };
