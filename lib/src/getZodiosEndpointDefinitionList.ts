@@ -255,8 +255,8 @@ export const getZodiosEndpointDefinitionList = (doc: OpenAPIObject, options?: Te
                     // resolve ref if needed, and fallback to default (unknown) value if needed
                     paramSchema = paramSchema
                         ? (isReferenceObject(paramSchema)
-                            ? ctx.resolver.getSchemaByRef(paramSchema.$ref)
-                            : paramSchema)!
+                              ? ctx.resolver.getSchemaByRef(paramSchema.$ref)
+                              : paramSchema)!
                         : {};
 
                     const paramCode = getZodSchema({
@@ -278,7 +278,7 @@ export const getZodiosEndpointDefinitionList = (doc: OpenAPIObject, options?: Te
                         schema: getZodVarName(
                             paramCode.assign(
                                 paramCode.toString() +
-                                getZodChain({ schema: paramSchema, meta: paramCode.meta, options })
+                                    getZodChain({ schema: paramSchema, meta: paramCode.meta, options })
                             ),
                             paramItem.name
                         ),
@@ -313,7 +313,7 @@ export const getZodiosEndpointDefinitionList = (doc: OpenAPIObject, options?: Te
                             schema: isReferenceObject(maybeSchema)
                                 ? ctx.resolver.getSchemaByRef(maybeSchema.$ref)
                                 : maybeSchema,
-                            meta: { isRequired: true },
+                            meta: schema.meta,
                         });
                 }
 
@@ -369,7 +369,7 @@ export const getZodiosEndpointDefinitionList = (doc: OpenAPIObject, options?: Te
                             schema: isReferenceObject(maybeSchema)
                                 ? ctx.resolver.getSchemaByRef(maybeSchema.$ref)
                                 : maybeSchema,
-                            meta: { isRequired: true },
+                            meta: schema.meta,
                         });
                 }
 
