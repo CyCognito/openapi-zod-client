@@ -95,8 +95,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
             return code.assign(`
                 z.discriminatedUnion("${propertyName}", [${schema.oneOf
-                    .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
-                    .join(", ")}])
+                .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
+                .join(", ")}])
             `);
         }
 
@@ -263,8 +263,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
                     isRequired: isPartial
                         ? true
                         : hasRequiredArray
-                            ? schema.required?.includes(prop)
-                            : options?.withImplicitRequiredProps,
+                        ? schema.required?.includes(prop)
+                        : options?.withImplicitRequiredProps,
                     name: prop,
                 } as CodeMetaData;
 
@@ -309,7 +309,7 @@ export const getZodChain = ({ schema, meta, options }: ZodChainArgs) => {
     match(schema.type)
         .with("string", () => chains.push(getZodChainableStringValidations(schema)))
         .with("number", "integer", () => chains.push(getZodChainableNumberValidations(schema)))
-        .otherwise(() => void 0); // Arrays and other types handled elsewhere
+        .otherwise(() => void 0);
 
     if (typeof schema.description === "string" && schema.description !== "" && options?.withDescription) {
         if (["\n", "\r", "\r\n"].some((c) => String.prototype.includes.call(schema.description, c))) {
@@ -460,8 +460,6 @@ const getZodChainableArrayValidations = (schema: SchemaObject) => {
     }
 
 
-    // uniqueItems validation must come LAST because .refine() returns ZodEffects
-    // which does not support further chaining of .min(), .max(), etc.
     if (schema.uniqueItems === true) {
         validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: "Items must be unique" })`);
     } return validations.join(".");
