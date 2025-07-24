@@ -95,8 +95,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
 
             return code.assign(`
                 z.discriminatedUnion("${propertyName}", [${schema.oneOf
-                .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
-                .join(", ")}])
+                    .map((prop) => getZodSchema({ schema: prop, ctx, meta, options }))
+                    .join(", ")}])
             `);
         }
 
@@ -263,8 +263,8 @@ export function getZodSchema({ schema: $schema, ctx, meta: inheritedMeta, option
                     isRequired: isPartial
                         ? true
                         : hasRequiredArray
-                        ? schema.required?.includes(prop)
-                        : options?.withImplicitRequiredProps,
+                            ? schema.required?.includes(prop)
+                            : options?.withImplicitRequiredProps,
                     name: prop,
                 } as CodeMetaData;
 
@@ -461,7 +461,7 @@ const getZodChainableArrayValidations = (schema: SchemaObject) => {
 
 
     if (schema.uniqueItems === true) {
-        validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: "Items must be unique" })`);
+        validations.push(`refine((arr) => { const unique: any[] = []; for (const item of arr) { if (unique.some(u => isEqual(u, item))) { return false; } unique.push(item); } return true; }, { message: "Items must be unique" })`);
     }
     return validations.join(".");
 };

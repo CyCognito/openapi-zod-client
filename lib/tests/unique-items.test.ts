@@ -12,7 +12,7 @@ test("uniqueItems validation", () => {
             }
         }).toString()
     ).toMatchInlineSnapshot(
-        '"z.array(z.string()).refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: \"Items must be unique\" })"'
+        '"z.array(z.string()).refine((arr) => { const unique: any[] = []; for (const item of arr) { if (unique.some(u => isEqual(u, item))) { return false; } unique.push(item); } return true; }, { message: "Items must be unique" })"'
     );
 
     // Test array without uniqueItems (should not have refine)
@@ -52,6 +52,6 @@ test("uniqueItems validation", () => {
             }
         }).toString()
     ).toMatchInlineSnapshot(
-        '"z.array(z.string()).min(2).max(5).refine((arr) => { const unique: any[] = []; for (const item of arr) { if (!unique.some(u => isEqual(u, item))) { unique.push(item); } } return unique.length === arr.length; }, { message: \"Items must be unique\" })"'
+        '"z.array(z.string()).min(2).max(5).refine((arr) => { const unique: any[] = []; for (const item of arr) { if (unique.some(u => isEqual(u, item))) { return false; } unique.push(item); } return true; }, { message: "Items must be unique" })"'
     );
 });
