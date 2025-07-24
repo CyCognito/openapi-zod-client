@@ -37,7 +37,6 @@ test("validations", () => {
                     arrayWithMin: { type: "array", items: { type: "string" }, minItems: 3 },
                     arrayWithMax: { type: "array", items: { type: "string" }, maxItems: 3 },
                     arrayWithFormat: { type: "array", items: { type: "string", format: "uuid" } },
-                    // TODO ?
                     arrayWithUnique: { type: "array", items: { type: "string" }, uniqueItems: true },
                     //
                     object: { type: "object", properties: { str: { type: "string" } } },
